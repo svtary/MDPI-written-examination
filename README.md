@@ -1,73 +1,90 @@
-# React + TypeScript + Vite
+# MDPI 高级前端笔试
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+本项目包含响应式导航、组件化列表设置和区间操作方案计数三道题。使用 React、TypeScript、Vite 和原生 CSS。
 
-Currently, two official plugins are available:
+## 本地运行
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+在项目根目录打开终端。以下命令已用 Node.js `22.22.0` 验证。第三题直接运行 TypeScript 源文件，建议使用 Node.js `22.18` 或更新版本。
 
-## React Compiler
+### 运行第一题和第二题
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm ci
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+打开终端显示的本地地址，通常是 `http://localhost:5173/`。首页顶部是第一题的导航栏，下方是第二题的 `List one` 和 `List two`。依赖安装完成后，日常启动只需运行 `npm run dev`。
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- 第一题可以在浏览器的设备模式中切换 1440 px 和 375 px，查看导航布局和移动端菜单。
+- 第二题可以切换某一行的频率或关闭某一组的开关，查看两组状态是否独立。第二组的三点菜单中，`Share` 复制条目信息，`Edit` 是禁用的展示项。
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 运行第三题
+
+在项目根目录运行算法文件。修改文件末尾的 `a` 和 `w`，再运行同一条命令即可验证自己的用例。
+
+```sh
+node algorithms/count-operation-plans.ts
+```
+
+文件里的 `a = [2, 1, 1, 2]`、`w = 3` 输出 `6`。也可以试 `a = [0, 0]`、`w = 1`，预期输出 `2`，对应 `{[1, 2]}` 和 `{[1, 1], [2, 2]}`。
+
+## 实现实录
+
+先对照题目描述定位 Figma 的两张设计页，再将导航和列表合并到首页。`app.tsx` 负责组合顶部 `Header` 和 `<main>` 下的两个 `List`。组件按目录组织，以 `index.tsx` 为入口，`styles.css` 为同目录样式，跨目录引用使用 `@/`。
+
+### 第一题 · 响应式导航
+
+桌面以 1440 × 70 的 Figma 稿为基准，左侧展示 Logo 和四个导航项，右侧展示搜索、登录和 `Submit`。手机以 375 × 48 为基准，右侧展示搜索、账户和菜单按钮。两种布局共用导航项数据。CSS 在 768 px 切换布局，桌面端间距随视口收缩，移动菜单向视口内对齐。
+
+移动导航和列表行菜单复用 `Dropdown`。菜单按钮用 `aria-expanded` 表达状态，支持点击、键盘触发、按 `Escape` 和点击外部关闭。搜索、账户、登录、提交和导航项按稿展示。已在 Chrome 验证 1440、768、375 和 320 px 下的组合布局。 [第一题设计稿](https://www.figma.com/design/ytQyVMLSEBQEuBiWLEztFv/MDPI-TEST?node-id=0-1)
+
+### 第二题 · 组件化列表设置
+
+`App` 在 `<main>` 中使用两个 `List`。每个 `List` 接收标题和初始条目，独立管理启用状态和条目。两组共用 `ListRow`，`showMoreActions` 控制三点菜单。频率使用原生单选按钮，每行有自己的单选组。状态更新和删除都按条目 ID 定位，支持同名条目。
+
+主内容区在导航下方居中，最大宽度 1095 px。桌面保留 53 px 的行高和 8 px 的行间距。组标题加粗，超长行标题用单行省略号。窄屏下操作区可以移到下一行，避免挤出视口。默认两组开启，每行选中 `Monthly`。关闭分组禁用其行操作并保留当前值。`Share` 复制条目名称和频率，删除直接更新当前列表。`Edit` 为稿件里的展示项。刷新会恢复初始数据。 [第二题设计稿](https://www.figma.com/design/ytQyVMLSEBQEuBiWLEztFv/MDPI-TEST?node-id=1-3348)
+
+图标使用 Figma 导出的 SVG。Cabin 和 ABeeZee 随项目加载并附带许可证。Suisse Int’l 已装在系统上时优先使用，否则回退到 Arial。
+
+### 第三题 · 区间操作方案计数
+
+设 `b[i] = w - a[i]`，表示第 `i` 个位置必须被多少个操作区间覆盖。在数组两端补上 `b[0] = b[n + 1] = 0`。若某个 `b[i] < 0`，只做加法无法达到目标，直接返回 `0`。
+
+从左到右扫描边界。在从位置 `i - 1` 进入 `i` 时，因左端点和右端点各自不能重复，最多结束一个区间、开始一个区间。先结束再开始，保证刚开始的区间不会在前一个位置结束。下表中的 `k` 表示 `b[i - 1]`。
+
+| `b[i] - b[i - 1]` | 当前边界的处理 | 方案乘数 |
+| --- | --- | --- |
+| `+1` | 在 `i` 开始一个区间 | `1` |
+| `0` | 保持原状，或从 `k` 个区间中结束一个，再在 `i` 开始新的区间 | `k + 1` |
+| `-1` | 从 `k` 个区间中选一个在 `i - 1` 结束 | `k` |
+| 其他 | 单个边界无法产生这样的覆盖变化 | `0` |
+
+每次结束区间都会确定一个已知的左端点和当前右端点。给定一组最终区间，也能沿扫描顺序还原每个边界的开始和结束事件，因此每个区间集合恰好计数一次。每个边界的选择数只取决于 `k`，将所有乘数相乘即可。
+
+算法扫描一次输入，执行 `O(n)` 次算术操作，只保留固定数量的变量。最坏情况下需要检查所有输入，因此线性扫描的次数最优。输入采用 JavaScript 安全整数 `number`，结果用 `bigint` 精确计数，大整数运算的实际耗时随数值位数增长。
+
+开发时用独立穷举程序枚举合法的区间集合，对照了长度至多为 6 的 280,392 组输入。计数全部一致，并额外验证了超过 `Number` 安全整数范围的结果。
+
+## 目录结构
+
+```text
+├── algorithms/
+│   └── count-operation-plans.ts    第三题的区间计数
+├── src/                            前两题的页面源码
+│   ├── app.tsx                     组合 Header 和两个 List
+│   ├── index.css                   页面布局、全局样式和字体
+│   ├── list-data.ts                两组列表的初始数据
+│   ├── assets/                     字体、Logo 和图标
+│   └── components/
+│       ├── header/                 桌面和移动端导航
+│       ├── list/                   单组列表及其状态
+│       └── dropdown/               导航和列表共用的下拉组件
+└── tsconfig.algorithms.json        算法的类型检查配置
+```
+
+## 构建检查
+
+```sh
+npm run lint
+npm run build
 ```

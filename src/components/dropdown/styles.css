@@ -1,0 +1,19 @@
+.dropdown {
+  position: relative;
+}
+
+.dropdown-trigger {
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.dropdown-panel {
+  position: absolute;
+  z-index: 2;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  box-shadow: 0 4px 5px rgb(53 60 85 / 15%);
+}
